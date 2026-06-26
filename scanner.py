@@ -5,7 +5,29 @@ import requests
 import schedule
 import threading
 from datetime import datetime, timedelta
+from http.server import HTTPServer, BaseHTTPRequestHandler
 import google.generativeai as genai
+
+# ============================================================
+# FAKE WEB SERVER — Keeps Render free tier happy
+# ============================================================
+class Handler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(b'Chima Dtrader Scanner is running.')
+
+    def log_message(self, format, *args):
+        pass  # Suppress access logs
+
+def run_web_server():
+    port = int(os.environ.get("PORT", 10000))
+    server = HTTPServer(('0.0.0.0', port), Handler)
+    print(f"[WebServer] Listening on port {port}")
+    server.serve_forever()
+
+# Start web server in background thread immediately
+threading.Thread(target=run_web_server, daemon=True).start()
 
 # ============================================================
 # CONFIGURATION — Replace these with your real keys on Render
@@ -401,4 +423,4 @@ if __name__ == "__main__":
     print("  Built for Godswill | SMC Trader")
     print("=" * 50)
     start_scheduler()
-
+    
